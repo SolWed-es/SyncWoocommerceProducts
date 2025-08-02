@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view>
+    <columns>
+        <group name="data" numcolumns="12">
+            <column name="id" display="none" order="100">
+                <widget type="text" fieldname="id" readonly="true"/>
+            </column>
+            <column name="fs_product_unique_ref" display="left" order="110">
+                <widget type="text" fieldname="fs_product_unique_ref" maxlength="30" required="true"/>
+            </column>
+            <column name="last_sync" display="left" order="120">
+                <widget type="datetime" fieldname="last_sync"/>
+            </column>
+            <column name="name" display="" order="130">
+                <widget type="text" fieldname="name" maxlength="100"/>
+            </column>
+            <column name="sync_status" numcolumns="2" display="left" order="140" overwrite="true">
+                <widget type="textBtn" fieldname="sync_status" action="checkCifNif" iconbtn="fas fa-refresh"/>
+            </column>
+            <column name="Collection ID" display="left" order="150">
+                <widget type="number" fieldname="wc_collection_id" max="0" min="0" step="0"/>
+            </column>
+            <column name="wc_product_unique_ref" display="left" order="160">
+                <widget type="text" fieldname="wc_product_unique_ref" maxlength="30" required="true"/>
+            </column>
+        </group>
+        <group name="logs" numcolumns="12">
+            <column name="creation-date" display="none" order="100">
+                <widget type="datetime" fieldname="creation_date" required="true"/>
+            </column>
+            <column name="user" order="110">
+                <widget type="select" fieldname="nick">
+                    <values source="users" fieldcode="nick" fieldtile="nick"/>
+                </widget>
+            </column>
+            <column name="last-update" display="none" order="120">
+                <widget type="datetime" fieldname="last_update"/>
+            </column>
+            <column name="last-user" order="130">
+                <widget type="select" fieldname="last_nick">
+                    <values source="users" fieldcode="nick" fieldtile="nick"/>
+                </widget>
+            </column>
+        </group>
+    </columns>
+</view>
