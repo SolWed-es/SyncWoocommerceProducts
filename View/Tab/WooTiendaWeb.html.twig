@@ -1,0 +1,612 @@
+{% set currentView = fsc.getCurrentView() %}
+{% set firstView = fsc.views | first %}
+
+{% include 'Macro/Toasts.html.twig' %}
+
+<script>
+    let wooCategories = [];
+
+    function createNewProduct(action) {
+        animateSpinner('add');
+
+        const fsProductId = "{{ fsc.model.idproducto }}";
+        if (!fsProductId) {
+            alert('Primero guarda el producto en FacturaScripts');
+            animateSpinner('remove');
+            return false;
+        }
+
+        const data = new FormData();
+        data.append('action', action);
+        data.append('fs_id', fsProductId);
+
+        fetch('{{ fsc.url() }}', {
+            method: 'POST',
+            body: data
+        }).then(function (response) {
+            animateSpinner('remove', true);
+            return response.json().then(data => ({
+                status: response.status,
+                ok: response.ok,
+                data: data
+            }));
+        }).then(function(result) {
+            if (result.ok && result.data.success) {
+                alert('Producto sincronizado exitosamente con WooCommerce!');
+                location.reload(); // Reload to show the edit form
+            } else {
+                if (result.data.messages && Array.isArray(result.data.messages)) {
+                    const errorMessages = result.data.messages.map(msg => msg.message).join('\n');
+                    alert('Error: ' + errorMessages);
+                } else {
+                    alert('Error al sincronizar el producto');
+                }
+            }
+        }).catch(function (error) {
+            alert('Error de conexión al sincronizar producto');
+            console.error('Sync error:', error);
+            animateSpinner('remove', false);
+        });
+        return false;
+    }
+
+    function updateWooCommerceProduct() {
+        animateSpinner('add');
+
+        const fsProductId = "{{ fsc.model.idproducto }}";
+        const form = document.getElementById('wooCommerceForm');
+        const formData = new FormData(form);
+        formData.append('action', 'update-wc-product');
+        formData.append('fs_id', fsProductId);
+
+        fetch('{{ fsc.url() }}', {
+            method: 'POST',
+            body: formData
+        }).then(function (response) {
+            animateSpinner('remove', true);
+            return response.json().then(data => ({
+                status: response.status,
+                ok: response.ok,
+                data: data
+            }));
+        }).then(function(result) {
+            if (result.ok && result.data.success) {
+                showSuccessMessage('Producto actualizado exitosamente en WooCommerce');
+            } else {
+                if (result.data.messages && Array.isArray(result.data.messages)) {
+                    const errorMessages = result.data.messages.map(msg => msg.message).join('\n');
+                    alert('Error: ' + errorMessages);
+                } else {
+                    alert('Error al actualizar el producto');
+                }
+            }
+        }).catch(function (error) {
+            alert('Error de conexión al actualizar producto');
+            console.error('Update error:', error);
+            animateSpinner('remove', false);
+        });
+        return false;
+    }
+
+    function loadWooCommerceCategories() {
+        const data = new FormData();
+        data.append('action', 'get-wc-categories');
+
+        fetch('{{ fsc.url() }}', {
+            method: 'POST',
+            body: data
+        }).then(function (response) {
+            return response.json();
+        }).then(function(result) {
+            if (result.success && result.categories) {
+                wooCategories = result.categories;
+                populateCategorySelect();
+            }
+        }).catch(function (error) {
+            console.error('Categories load error:', error);
+        });
+    }
+
+    function populateCategorySelect() {
+        const select = document.getElementById('woo_categories');
+        if (!select) return;
+
+        // Clear existing options except "Select categories"
+        select.innerHTML = '<option value="">Seleccionar categorías...</option>';
+
+        wooCategories.forEach(function(category) {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            select.appendChild(option);
+        });
+    }
+
+    function showCreateCategoryModal() {
+        const modal = document.getElementById('createCategoryModal');
+        if (modal) {
+            modal.style.display = 'block';
+        }
+    }
+
+    function hideCreateCategoryModal() {
+        const modal = document.getElementById('createCategoryModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        document.getElementById('newCategoryName').value = '';
+    }
+
+    function createNewCategory() {
+        const categoryName = document.getElementById('newCategoryName').value.trim();
+        if (!categoryName) {
+            alert('Ingresa un nombre para la categoría');
+            return;
+        }
+
+        const data = new FormData();
+        data.append('action', 'create-wc-category');
+        data.append('category_name', categoryName);
+
+        fetch('{{ fsc.url() }}', {
+            method: 'POST',
+            body: data
+        }).then(function (response) {
+            return response.json();
+        }).then(function(result) {
+            if (result.success && result.category) {
+                wooCategories.push(result.category);
+                populateCategorySelect();
+
+                // Select the newly created category
+                const select = document.getElementById('woo_categories');
+                const newOption = Array.from(select.options).find(option => option.value == result.category.id);
+                if (newOption) {
+                    newOption.selected = true;
+                }
+
+                hideCreateCategoryModal();
+                showSuccessMessage('Categoría creada exitosamente');
+            } else {
+                alert('Error al crear la categoría');
+            }
+        }).catch(function (error) {
+            alert('Error de conexión al crear categoría');
+            console.error('Create category error:', error);
+        });
+    }
+
+    function showSuccessMessage(message) {
+        const alertContainer = document.getElementById('successAlert');
+        if (alertContainer) {
+            alertContainer.innerHTML = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> ${message}
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                </div>
+            `;
+            setTimeout(function() {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+    }
+
+    // Load categories when the form is displayed
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('wooCommerceForm')) {
+            loadWooCommerceCategories();
+        }
+    });
+</script>
+
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        border-radius: 5px;
+        width: 400px;
+        max-width: 90%;
+    }
+
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+
+    .status-published { background-color: #28a745; }
+    .status-draft { background-color: #ffc107; }
+    .status-private { background-color: #dc3545; }
+</style>
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+
+                <div id="successAlert"></div>
+
+                {% if fsc.model.woo_id %}
+                    {# WooCommerce Edit Form #}
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-edit"></i> Editar Producto WooCommerce
+                            </h5>
+                            <div>
+                                <span class="status-indicator status-{{ fsc.model.woo_status ?? 'draft' }}"></span>
+                                <span class="text-muted small">
+                                    Estado: {{ fsc.model.woo_status ?? 'Draft' }}
+                                    {% if fsc.model.woo_status == 'publish' %}
+                                        <i class="fas fa-eye text-success" title="Visible en tienda"></i>
+                                    {% else %}
+                                        <i class="fas fa-eye-slash text-warning" title="No visible en tienda"></i>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+
+                            {# WooCommerce Info #}
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <strong>WooCommerce ID:</strong> {{ fsc.model.woo_id }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>FS Referencia:</strong> {{ fsc.model.referencia }}
+                                </div>
+                                <div class="col-md-4">
+                                    {% if fsc.model.woo_permalink %}
+                                        <a href="{{ fsc.model.woo_permalink }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-external-link-alt"></i> Ver en tienda
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            {# Edit Form #}
+                            <form id="wooCommerceForm" onsubmit="updateWooCommerceProduct(); return false;">
+
+                                {# Basic Info #}
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label for="woo_product_name">
+                                                <strong>Nombre del Producto</strong>
+                                            </label>
+                                            <input type="text" class="form-control" id="woo_product_name" name="woo_product_name"
+                                                   value="{{ fsc.model.woo_product_name ?? fsc.model.descripcion }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="woo_status">
+                                                <strong>Estado</strong>
+                                                <i class="fas fa-info-circle text-muted" title="Publish = Visible en tienda, Draft = Oculto"></i>
+                                            </label>
+                                            <select class="form-control" id="woo_status" name="woo_status">
+                                                <option value="publish" {{ fsc.model.woo_status == 'publish' ? 'selected' : '' }}>
+                                                    🟢 Publicado (Visible)
+                                                </option>
+                                                <option value="draft" {{ fsc.model.woo_status == 'draft' or not fsc.model.woo_status ? 'selected' : '' }}>
+                                                    🟡 Borrador (Oculto)
+                                                </option>
+                                                <option value="private" {{ fsc.model.woo_status == 'private' ? 'selected' : '' }}>
+                                                    🔴 Privado
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {# Descriptions #}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="woo_short_description">Descripción Corta</label>
+                                            <textarea class="form-control" id="woo_short_description" name="woo_short_description"
+                                                      rows="3">{{ fsc.model.woo_short_description ?? fsc.model.descripcion }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="woo_description">Descripción Larga</label>
+                                            <textarea class="form-control" id="woo_description" name="woo_description"
+                                                      rows="3">{{ fsc.model.woo_description ?? fsc.model.observaciones }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {# Price & SKU #}
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="woo_sku">SKU</label>
+                                            <input type="text" class="form-control" id="woo_sku" name="woo_sku"
+                                                   value="{{ fsc.model.woo_sku ?? fsc.model.referencia }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="woo_price">Precio Regular (€)</label>
+                                            <input type="number" step="0.01" class="form-control" id="woo_price" name="woo_price"
+                                                   value="{{ fsc.model.woo_price ?? fsc.model.precio }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="woo_sale_price">Precio Oferta (€)</label>
+                                            <input type="number" step="0.01" class="form-control" id="woo_sale_price" name="woo_sale_price"
+                                                   value="{{ fsc.model.woo_sale_price ?? '' }}" placeholder="Opcional">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="woo_catalog_visibility">Visibilidad</label>
+                                            <select class="form-control" id="woo_catalog_visibility" name="woo_catalog_visibility">
+                                                <option value="visible" {{ fsc.model.woo_catalog_visibility == 'visible' or not fsc.model.woo_catalog_visibility ? 'selected' : '' }}>
+                                                    Catálogo y Búsqueda
+                                                </option>
+                                                <option value="catalog" {{ fsc.model.woo_catalog_visibility == 'catalog' ? 'selected' : '' }}>
+                                                    Solo Catálogo
+                                                </option>
+                                                <option value="search" {{ fsc.model.woo_catalog_visibility == 'search' ? 'selected' : '' }}>
+                                                    Solo Búsqueda
+                                                </option>
+                                                <option value="hidden" {{ fsc.model.woo_catalog_visibility == 'hidden' ? 'selected' : '' }}>
+                                                    Oculto
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {# Stock Management #}
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input" id="woo_manage_stock" name="woo_manage_stock"
+                                                       value="yes" {{ fsc.model.woo_manage_stock == 'yes' ? 'checked' : 'checked' }}>
+                                                <label class="form-check-label" for="woo_manage_stock">
+                                                    Gestionar Stock
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="woo_stock_quantity">Cantidad Stock</label>
+                                            <input type="number" class="form-control" id="woo_stock_quantity" name="woo_stock_quantity"
+                                                   value="{{ fsc.model.woo_stock_quantity ?? fsc.model.stockfis ?? 0 }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="woo_weight">Peso (kg)</label>
+                                            <input type="number" step="0.001" class="form-control" id="woo_weight" name="woo_weight"
+                                                   value="{{ fsc.model.woo_weight ?? '' }}" placeholder="Opcional">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {# Dimensions #}
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="woo_length">Largo (cm)</label>
+                                            <input type="number" step="0.1" class="form-control" id="woo_length" name="woo_length"
+                                                   value="{{ fsc.model.woo_length ?? '' }}" placeholder="Opcional">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="woo_width">Ancho (cm)</label>
+                                            <input type="number" step="0.1" class="form-control" id="woo_width" name="woo_width"
+                                                   value="{{ fsc.model.woo_width ?? '' }}" placeholder="Opcional">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="woo_height">Alto (cm)</label>
+                                            <input type="number" step="0.1" class="form-control" id="woo_height" name="woo_height"
+                                                   value="{{ fsc.model.woo_height ?? '' }}" placeholder="Opcional">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {# Categories #}
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label for="woo_categories">Categorías</label>
+                                            <select class="form-control" id="woo_categories" name="woo_categories[]" multiple>
+                                                <option value="">Cargando categorías...</option>
+                                            </select>
+                                            <small class="text-muted">Mantén Ctrl presionado para seleccionar múltiples categorías</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>&nbsp;</label>
+                                            <div>
+                                                <button type="button" class="btn btn-outline-secondary btn-block"
+                                                        onclick="showCreateCategoryModal()">
+                                                    <i class="fas fa-plus"></i> Nueva Categoría
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {# Save Button #}
+                                <div class="row mt-4">
+                                    <div class="col text-center">
+                                        <button type="submit" class="btn btn-lg btn-success btn-spin-action">
+                                            <i class="fas fa-save fa-fw"></i>
+                                            <span class="d-none d-sm-inline-block">Actualizar Producto WooCommerce</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+
+                    {# Sync Info #}
+                    <div class="card shadow mb-4">
+                        <div class="card-body">
+                            <h6 class="text-muted">Información de Sincronización</h6>
+                            <div class="row small text-muted">
+                                <div class="col-md-3">
+                                    <strong>Creado:</strong><br>
+                                    {{ fsc.model.woo_creation_date ?? 'N/A' }}<br>
+                                    <small>por: {{ fsc.model.woo_nick ?? 'N/A' }}</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <strong>Última actualización:</strong><br>
+                                    {{ fsc.model.woo_last_update ?? 'N/A' }}<br>
+                                    <small>por: {{ fsc.model.woo_last_nick ?? 'N/A' }}</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>URL WooCommerce:</strong><br>
+                                    {% if fsc.model.woo_permalink %}
+                                        <a href="{{ fsc.model.woo_permalink }}" target="_blank" class="text-primary">
+                                            {{ fsc.model.woo_permalink }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">No disponible</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                {% else %}
+                    {# Initial Sync Card #}
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h5 class="m-0 font-weight-bold text-primary">
+                                <i class="fas fa-cube"></i> Sincronización WooCommerce
+                            </h5>
+                        </div>
+                        <div class="card-body">
+
+                            {# Product Info #}
+                            {% if fsc.model.idproducto %}
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <strong>Referencia:</strong> {{ fsc.model.referencia ?? 'Sin referencia' }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Descripción:</strong> {{ fsc.model.descripcion ?? 'Sin descripción' }}
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-4">
+                                        <strong>Precio:</strong> {{ fsc.model.precio ?? '0' }} €
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Stock:</strong> {{ fsc.model.stockfis ?? '0' }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <span class="badge badge-secondary">No sincronizado</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {# Sync Actions #}
+                            <div class="text-center">
+                                {% if fsc.model.idproducto %}
+                                    <p class="mb-4">Sincronizar este producto con WooCommerce</p>
+
+                                    <button type="button" class="btn btn-lg btn-primary btn-spin-action btn-sync-woo"
+                                            onclick="return createNewProduct('create-wc-product')">
+                                        <i class="fas fa-sync fa-fw"></i>
+                                        <span class="d-none d-sm-inline-block">Sincronizar con WooCommerce</span>
+                                    </button>
+
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        Primero debes guardar el producto en FacturaScripts
+                                    </div>
+
+                                    <button type="button" class="btn btn-lg btn-secondary" disabled>
+                                        <i class="fas fa-save fa-fw"></i>
+                                        <span class="d-none d-sm-inline-block">Primero guarda el producto</span>
+                                    </button>
+                                {% endif %}
+
+                                <div class="mt-3 text-muted small">
+                                    <i class="fas fa-info-circle"></i>
+                                    La sincronización creará el producto en WooCommerce y guardará la relación
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Debug Info (remove in production) #}
+                {% if app.debug %}
+                    <div class="card shadow mb-4">
+                        <div class="card-body bg-light">
+                            <h6>Debug Info:</h6>
+                            <small>
+                                Product ID: {{ fsc.model.idproducto ?? 'null' }}<br>
+                                WooCommerce ID: {{ fsc.model.woo_id ?? 'null' }}<br>
+                                Current View: {{ currentView.getViewName() }}<br>
+                                URL: {{ fsc.url() }}<br>
+                                WooCommerce Status: {{ fsc.model.woo_status ?? 'null' }}<br>
+                                WooCommerce Categories: {{ fsc.model.woo_categories ?? 'null' }}
+                            </small>
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+    {# Create Category Modal #}
+    <div id="createCategoryModal" class="modal">
+        <div class="modal-content">
+            <h4>Crear Nueva Categoría</h4>
+            <div class="form-group">
+                <label for="newCategoryName">Nombre de la Categoría:</label>
+                <input type="text" class="form-control" id="newCategoryName" placeholder="Ingresa el nombre">
+            </div>
+            <div class="text-right">
+                <button type="button" class="btn btn-secondary" onclick="hideCreateCategoryModal()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="createNewCategory()">
+                    <i class="fas fa-plus"></i> Crear
+                </button>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

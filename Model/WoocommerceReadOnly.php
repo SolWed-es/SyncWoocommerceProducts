@@ -7,24 +7,27 @@ use FacturaScripts\Core\Model\Base\ModelTrait;
 use FacturaScripts\Core\Tools;
 use FacturaScripts\Core\Session;
 
-class WoocommerceProducto extends ModelClass
+class WoocommerceReadOnly extends ModelClass
 {
     use ModelTrait;
 
     /** @var string */
-    public $creation_date;
+    public $catalog_visibility;
 
     /** @var string */
-    public $fs_product_unique_ref;
+    public $categories;
+
+    /** @var string */
+    public $creation_date;
 
     /** @var int */
     public $id;
 
     /** @var string */
-    public $last_nick;
+    public $images;
 
     /** @var string */
-    public $last_sync;
+    public $last_nick;
 
     /** @var string */
     public $last_update;
@@ -33,25 +36,31 @@ class WoocommerceProducto extends ModelClass
     public $name;
 
     /** @var string */
+    public $nameProducto;
+
+    /** @var string */
     public $nick;
 
     /** @var string */
-    public $sync_status;
+    public $permalink;
+
+    /** @var float */
+    public $price;
+
+    /** @var string */
+    public $sku;
+
+    /** @var string */
+    public $status;
 
     /** @var int */
-    public $wc_collection_id;
-
-    /** @var string */
-    public $wc_product_unique_ref;
-
-    /** @var string */
-    public $error_message;
+    public $woo_id;
 
     public function clear() 
     {
         parent::clear();
-        $this->last_sync = date(self::DATETIME_STYLE);
-        $this->wc_collection_id = 0;
+        $this->price = 0.0;
+        $this->woo_id = 0;
     }
 
     public static function primaryColumn(): string
@@ -61,18 +70,21 @@ class WoocommerceProducto extends ModelClass
 
     public static function tableName(): string
     {
-        return "woocommerce_productos";
+        return "woocommerce_read_only";
     }
 
     public function test(): bool
     {
         $this->creation_date = $this->creationdate ?? Tools::dateTime();
         $this->nick = $this->nick ?? Session::user()->nick;
-        $this->fs_product_unique_ref = Tools::noHtml($this->fs_product_unique_ref);
+        $this->catalog_visibility = Tools::noHtml($this->catalog_visibility);
+        $this->categories = Tools::noHtml($this->categories);
+        $this->images = Tools::noHtml($this->images);
         $this->name = Tools::noHtml($this->name);
-        $this->sync_status = Tools::noHtml($this->sync_status);
-        $this->wc_product_unique_ref = Tools::noHtml($this->wc_product_unique_ref);
-        $this->error_message = Tools::noHtml($this->error_message);
+        $this->nameProducto = Tools::noHtml($this->nameProducto);
+        $this->permalink = Tools::noHtml($this->permalink);
+        $this->sku = Tools::noHtml($this->sku);
+        $this->status = Tools::noHtml($this->status);
         return parent::test();
     }
 

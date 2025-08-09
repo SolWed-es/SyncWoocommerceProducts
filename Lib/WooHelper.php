@@ -10,6 +10,9 @@ class WooHelper {
     private static $woo_client = null;
     public static function getClient(): ?Client
     {
+        error_log("[WooAPI] Initializing client");
+
+
         if (self::$woo_client) {
             return self::$woo_client;
         }

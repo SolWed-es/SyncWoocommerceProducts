@@ -1,17 +1,17 @@
 <?php
+/**
+ * Copyright (C) 2022-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ */
 
 namespace FacturaScripts\Plugins\PushWoocommerceProductos\Controller;
 
 use FacturaScripts\Core\Lib\ExtendedController\EditController;
 
 /**
- * Este es un controlador específico para ediciones. Permite una o varias pestañas.
- * Cada una con un xml y modelo diferente, puede ser de tipo edición, listado, html o panel.
- * Además hace uso de archivos de XMLView para definir qué columnas mostrar y cómo.
- *
- * https://facturascripts.com/publicaciones/editcontroller-642
+ * @author Daniel Fernández Giménez <hola@danielfg.es>
  */
 class EditWoocommerceProducto extends EditController
+
 {
     public function getModelClassName(): string
     {
@@ -21,8 +21,37 @@ class EditWoocommerceProducto extends EditController
     public function getPageData(): array
     {
         $pageData = parent::getPageData();
-        $pageData["title"] = "WoocommerceProducto";
-        $pageData["icon"] = "fas fa-search";
+        $pageData["title"] = "Tienda WEB";
+        $pageData["menu"] = "warehouse";
+        $pageData["icon"] = "fas fa-store";
         return $pageData;
     }
+
+    public function createViews()
+    {
+        parent::createViews();
+        $viewName = 'Etiquetas';
+        $this->addEditListView('EditWoocommerceProducto', 'WoocommerceProducto', 'Tienda WEBB', 'fas fa-shop');
+        $this->addHtmlView('Etiquetas', 'Tab/Test', 'WoocommerceProducto', 'shop', 'fas fa-shop');
+
+    }
+
+    public function getAvailableTags()
+    {
+        return function () {
+            $tags = [];
+            $mainViewName = $this->getMainViewName();
+            foreach ($this->views[$mainViewName]->model->getVariants() as $key => $variant) {
+                $tags[$key] = [
+                    'reference' => $variant->referencia,
+                    'url' => $variant->url(),
+                    'quantity' => 1
+                ];
+            }
+
+            return $tags;
+        };
+    }
+
+
 }

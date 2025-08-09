@@ -18,7 +18,11 @@ class Init extends InitClass
     public function init(): void
     {
         // se ejecuta cada vez que carga FacturaScripts (si este plugin está activado).
-        $this->loadExtension(new Extension\Controller\ListProducto());
+        $this->loadExtension(new Extension\Controller\EditProducto());
+        $this->loadExtension(new Extension\Model\Variante());
+        $this->loadExtension(new Extension\Model\Producto());
+
+
 
     }
 
