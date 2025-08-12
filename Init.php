@@ -2,6 +2,8 @@
 
 namespace FacturaScripts\Plugins\PushWoocommerceProductos;
 
+use FacturaScripts\Core\Html;
+use Twig\TwigFunction;
 use FacturaScripts\Core\Template\InitClass;
 use FacturaScripts\Core\Tools;
 
@@ -22,7 +24,16 @@ class Init extends InitClass
         $this->loadExtension(new Extension\Model\Variante());
         $this->loadExtension(new Extension\Model\Producto());
 
-
+        // Add json_decode function to twig settings
+        Html::addFunction(
+            new TwigFunction('json_decode', function (string $json) {
+                if (empty($json)) {
+                    return [];
+                }
+                $decoded = json_decode($json, true);
+                return $decoded !== null ? $decoded : [];
+            })
+        );
 
     }
 
