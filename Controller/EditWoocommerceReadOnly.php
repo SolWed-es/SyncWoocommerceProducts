@@ -21,9 +21,9 @@ class EditWoocommerceReadOnly extends EditController
     public function getPageData(): array
     {
         $pageData = parent::getPageData();
-        $pageData["title"] = "WoocommerceReadOnly";
-        $pageData["icon"] = "fas fa-shop";
-        $pageData["showonmenu"] = false;
+        $pageData["title"] = "Tienda WEB";
+        $pageData["menu"] = "warehouse";
+        $pageData["icon"] = "fas fa-store";
         return $pageData;
     }
 }

@@ -3,56 +3,27 @@
     <columns>
         <group name="data" numcolumns="12">
             <column name="id" display="none" order="100">
-                <widget type="text" fieldname="id" readonly="true" />
+                <widget type="text" fieldname="idproducto" readonly="true" />
             </column>
-            <column name="catalog_visibility" display="left" order="110">
-                <widget type="text" fieldname="catalog_visibility" maxlength="20" readonly="true" />
+            <column name="woo_id" display="none" order="101">
+                <widget type="number" fieldname="woo_id" readonly="true" />
             </column>
-            <column name="categories" display="left" order="120">
-                <widget type="textarea" fieldname="categories" readonly="true" />
+            <column name="name" display="" order="110">
+                <widget type="text" fieldname="woo_product_name" readonly="true" />
             </column>
-            <column name="images" display="left" order="130">
-                <widget type="textarea" fieldname="images" readonly="true" />
+            <column name="price" display="left" order="115">
+                <widget type="text" fieldname="woo_price" readonly="true" />
             </column>
-            <column name="name" display="" order="140">
-                <widget type="text" fieldname="name" maxlength="100" readonly="true" />
+            <column name="status" display="left" order="120">
+                <widget type="text" fieldname="woo_status" readonly="true" />
             </column>
-            <column name="nameproducto" display="left" order="150">
-                <widget type="text" fieldname="nameproducto" maxlength="200" readonly="true" />
+            <column name="creation-date" display="left" order="130">
+                <widget type="datetime" fieldname="creation_date" readonly="true" />
             </column>
-            <column name="permalink" display="left" order="160">
-                <widget type="textarea" fieldname="permalink" readonly="true" />
+            <column name="url" display="left" numcolumns="12" order="140">
+                <widget type="textarea" fieldname="woo_permalink" readonly="true" />
             </column>
-            <column name="price" display="left" order="170">
-                <widget type="number" fieldname="price" max="0" min="0" step="0" readonly="true" />
-            </column>
-            <column name="sku" display="left" order="180">
-                <widget type="text" fieldname="sku" maxlength="100" readonly="true" />
-            </column>
-            <column name="status" display="left" order="190">
-                <widget type="text" fieldname="status" maxlength="20" readonly="true" />
-            </column>
-            <column name="woo_id" display="left" order="200">
-                <widget type="number" fieldname="woo_id" max="0" min="0" step="0" readonly="true" />
-            </column>
-        </group>
-        <group name="logs" numcolumns="12">
-            <column name="creation-date" display="none" order="100">
-                <widget type="datetime" fieldname="creation_date" required="true" readonly="true" />
-            </column>
-            <column name="user" order="110">
-                <widget type="select" fieldname="nick" readonly="true">
-                    <values source="users" fieldcode="nick" fieldtile="nick"/>
-                </widget>
-            </column>
-            <column name="last-update" display="none" order="120">
-                <widget type="datetime" fieldname="last_update" readonly="true"/>
-            </column>
-            <column name="last-user" order="130">
-                <widget type="select" fieldname="last_nick" readonly="true">
-                    <values source="users" fieldcode="nick" fieldtile="nick"/>
-                </widget>
-            </column>
+
         </group>
     </columns>
 </view>

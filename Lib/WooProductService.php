@@ -283,6 +283,7 @@ class WooProductService
             error_log("WooProductService::deleteProduct - Deleting WooCommerce product ID: {$fsProduct->woo_id}");
 
             // Delete from WooCommerce
+            // Use true whether to permanently delete the product, Default is false (stays in trash).
             $params = $force ? ['force' => true] : [];
             $result = $this->wooClient->delete("products/{$fsProduct->woo_id}", $params);
 
@@ -311,6 +312,64 @@ class WooProductService
             ];
         } catch (\Exception $e) {
             error_log("WooProductService::deleteProduct - Exception during product deletion: " . $e->getMessage());
+
+            return [
+                'success' => false,
+                'message' => 'Error interno: ' . $e->getMessage(),
+                'data' => null
+            ];
+        }
+    }
+
+    /**
+     * Delete a WooCommerce product By Woocommerce Product ID
+     *
+     * @param int $wooProductId WooCommerce product ID
+     * @param bool $force Force delete (bypass trash)
+     * @return array Result array
+     */
+    public function deleteWooProductById(int $wooProductId, bool $force = false): array
+    {
+        error_log("WooProductService::deleteWooProductById - Starting WooCommerce product deletion for Woo ID: {$wooProductId}");
+
+        try {
+            // Check if WooCommerce product exists first (optional validation)
+            $wooProduct = $this->wooClient->get("products/{$wooProductId}");
+
+            if (!$wooProduct || (isset($wooProduct->id) && $wooProduct->id != $wooProductId)) {
+                error_log("WooProductService::deleteWooProductById - WooCommerce product not found: {$wooProductId}");
+                return [
+                    'success' => false,
+                    'message' => 'Producto no encontrado en WooCommerce',
+                    'data' => null
+                ];
+            }
+
+            error_log("WooProductService::deleteWooProductById - Deleting WooCommerce product ID: {$wooProductId}");
+
+            // Delete from WooCommerce
+            // Use true to permanently delete the product, Default is false (stays in trash).
+            $params = $force ? ['force' => true] : [];
+            $result = $this->wooClient->delete("products/{$wooProductId}", $params);
+
+            if (!$result) {
+                error_log("WooProductService::deleteWooProductById - Error deleting WooCommerce product {$wooProductId}");
+                return [
+                    'success' => false,
+                    'message' => 'Error al eliminar producto de WooCommerce',
+                    'data' => null
+                ];
+            }
+
+            error_log("WooProductService::deleteWooProductById - Successfully deleted WooCommerce product {$wooProductId}");
+
+            return [
+                'success' => true,
+                'message' => 'Producto eliminado exitosamente de WooCommerce',
+                'data' => $result
+            ];
+        } catch (\Exception $e) {
+            error_log("WooProductService::deleteWooProductById - Exception during product deletion: " . $e->getMessage());
 
             return [
                 'success' => false,

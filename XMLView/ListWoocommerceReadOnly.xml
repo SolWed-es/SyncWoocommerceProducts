@@ -2,53 +2,38 @@
 <view>
     <columns>
         <column name="id" display="none" order="100">
-            <widget type="text" fieldname="id" readonly="true"/>
+            <widget type="text" fieldname="idproducto" readonly="true"/>
         </column>
-        <column name="catalog_visibility" display="left" order="110">
-            <widget type="text" fieldname="catalog_visibility" maxlength="20"/>
+        <column name="woo_id" display="none" order="101">
+            <widget type="number" fieldname="woo_id" readonly="true"/>
         </column>
-        <column name="categories" display="left" order="120">
-            <widget type="textarea" fieldname="categories"/>
+        <column name="name" display="" order="110">
+            <widget type="text" fieldname="woo_product_name"/>
         </column>
-        <column name="images" display="left" order="130">
-            <widget type="textarea" fieldname="images"/>
+        <column name="price" display="left" order="115">
+            <widget type="number" fieldname="woo_price"/>
         </column>
-        <column name="name" display="" order="140">
-            <widget type="text" fieldname="name" maxlength="100"/>
+        <column name="status" display="left" order="120">
+            <widget type="text" fieldname="woo_status"/>
         </column>
-        <column name="name" display="left" order="150">
-            <widget type="text" fieldname="name" maxlength="200"/>
-        </column>
-        <column name="permalink" display="left" order="160">
-            <widget type="textarea" fieldname="permalink"/>
-        </column>
-        <column name="price" display="left" order="170">
-            <widget type="number" fieldname="price" max="0" min="0" step="0"/>
-        </column>
-        <column name="sku" display="left" order="180">
-            <widget type="text" fieldname="sku" maxlength="100"/>
-        </column>
-        <column name="status" display="left" order="190">
-            <widget type="text" fieldname="status" maxlength="20"/>
-        </column>
-        <column name="woo_id" display="left" order="200">
-            <widget type="number" fieldname="woo_id" max="0" min="0" step="0"/>
-        </column>
-        <column name="creation-date" display="none" order="210">
-            <widget type="datetime" fieldname="creation_date" required="true"/>
-        </column>
-        <column name="user" order="220">
-            <widget type="select" fieldname="nick">
-                <values source="users" fieldcode="nick" fieldtile="nick"/>
+        <column name="Vinculado" display="left" order="125">
+            <widget type="text" fieldname="vinculado">
+                <option color="success">Si</option>
+                <option color="danger">No</option>
             </widget>
         </column>
-        <column name="last-update" display="none" order="230">
-            <widget type="datetime" fieldname="last_update"/>
+        <column name="permalink" display="left" order="130">
+            <widget type="textarea" fieldname="woo_permalink"/>
         </column>
-        <column name="last-user" order="240">
-            <widget type="select" fieldname="last_nick">
-                <values source="users" fieldcode="nick" fieldtile="nick"/>
-            </widget>
+        <column name="creation-date" display="left" order="140">
+            <widget type="datetime" fieldname="creation_date"/>
         </column>
     </columns>
+
+    <rows>
+    <row type="status" fieldname="vinculado">
+        <option color="light" title="Vinculado">Si</option>
+        <option color="warning" title="No Vinculado">No</option>
+    </row>
+</rows>
 </view>
