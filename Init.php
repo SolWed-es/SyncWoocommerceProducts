@@ -21,7 +21,6 @@ class Init extends InitClass
     {
         // se ejecuta cada vez que carga FacturaScripts (si este plugin está activado).
         $this->loadExtension(new Extension\Controller\EditProducto());
-        $this->loadExtension(new Extension\Model\Variante());
         $this->loadExtension(new Extension\Model\Producto());
 
         // Add json_decode function to twig settings
@@ -34,13 +33,12 @@ class Init extends InitClass
                 return $decoded !== null ? $decoded : [];
             })
         );
-
     }
 
     public function uninstall(): void
-        {
-            // se ejecuta cada vez que se desinstale el plugin. Primero desinstala y luego ejecuta el uninstall.
-        }
+    {
+        // se ejecuta cada vez que se desinstale el plugin. Primero desinstala y luego ejecuta el uninstall.
+    }
 
     public function update(): void
     {
