@@ -1,5 +1,18 @@
-{% set currentView = fsc.getCurrentView() %}
 {% set firstView = fsc.views | first %}
+{% set product = firstView.model %}
+{% set currentView = fsc.getCurrentView() %}
+
+
+{% macro buttonDelete(formName) %}
+    {% set label = trans('delete-file') %}
+    {% set text = trans('are-you-sure') %}
+    {% set cancel = trans('cancel') %}
+    {% set confirm = trans('confirm') %}
+    <button type="button" class="btn btn-sm btn-outline-danger p-1"
+            onclick="confirmAction('{{ formName }}','delete-image','{{ label }}','{{ text }}','{{ cancel }}','{{ confirm }}');">
+        <i class="fas fa-trash-alt fa-fw" aria-hidden="true"></i>
+    </button>
+{% endmacro %}
 
 {% include 'Macro/Toasts.html.twig' %}
 

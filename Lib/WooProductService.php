@@ -172,6 +172,13 @@ class WooProductService
             // Convert form data to WooCommerce format
             $wooData = WooDataMapper::formToWooCommerce($formData);
 
+            // Add product images
+            $images = $this->getProductImages($fsProduct->idproducto);
+            if (!empty($images)) {
+                $wooData['images'] = $images;
+                error_log("WooProductService::createProduct - Added " . count($images) . " images to product data");
+            }
+
             error_log("WooProductService::updateProduct - Sending update data to WooCommerce API");
 
             // Update product in WooCommerce
@@ -397,7 +404,9 @@ class WooProductService
                 new DataBaseWhere('referencia', null, 'IS')
             ];
 
-            $productImages = (new ProductoImagen())->all($where);
+            // Order by 'orden' field to get images in the correct order
+            $orderBy = ['orden' => 'ASC'];
+            $productImages = (new ProductoImagen())->all($where, $orderBy);
 
             foreach ($productImages as $img) {
                 $siteUrl = Tools::siteUrl();
@@ -407,7 +416,7 @@ class WooProductService
                     'alt' => $img->observaciones ?? ''
                 ];
 
-                error_log("WooProductService::getProductImages - Added image: {$imageUrl}");
+                error_log("WooProductService::getProductImages - Added image (order: {$img->orden}): {$imageUrl}");
             }
 
             error_log("WooProductService::getProductImages - Found " . count($images) . " images for product {$fsProductId}");
